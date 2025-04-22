@@ -53,7 +53,8 @@
 #include <tf/transform_datatypes.h>
 #include <tf/transform_broadcaster.h>
 #include <geometry_msgs/Vector3.h>
-#include <livox_ros_driver/CustomMsg.h>
+// #include <livox_ros_driver/CustomMsg.h>
+#include "CustomMsg.h"
 #include "preprocess.h"
 #include "voxel_map_util.hpp"
 
