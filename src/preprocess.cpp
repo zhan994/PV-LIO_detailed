@@ -887,18 +887,17 @@ void Preprocess::rs_handler(const sensor_msgs::PointCloud2::ConstPtr &msg) {
     double range = pl_orig.points[i].x * pl_orig.points[i].x +
                    pl_orig.points[i].y * pl_orig.points[i].y +
                    pl_orig.points[i].z * pl_orig.points[i].z;
-    // if (range > blind * blind)
-    //     continue;
+    if (range > blind * blind) {
+      PointType added_pt;
+      added_pt.x = pl_orig.points[i].x;
+      added_pt.y = pl_orig.points[i].y;
+      added_pt.z = pl_orig.points[i].z;
+      added_pt.intensity = pl_orig.points[i].intensity;
+      added_pt.curvature =
+          (pl_orig.points[i].timestamp - pl_orig.points[0].timestamp) /
+          float(1000000); // curvature unit: s
 
-    PointType added_pt;
-    added_pt.x = pl_orig.points[i].x;
-    added_pt.y = pl_orig.points[i].y;
-    added_pt.z = pl_orig.points[i].z;
-    added_pt.intensity = pl_orig.points[i].intensity;
-    added_pt.curvature =
-        (pl_orig.points[i].timestamp - pl_orig.points[0].timestamp) /
-        float(1000000); // curvature unit: s
-
-    pl_surf.push_back(added_pt);
+      pl_surf.push_back(added_pt);
+    }
   }
 }
