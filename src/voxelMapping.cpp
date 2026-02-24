@@ -528,11 +528,11 @@ void publish_odometry(const ros::Publisher & pubOdomAftMapped)
     transform.setRotation( q );
     br.sendTransform( tf::StampedTransform( transform, odomAftMapped.header.stamp, "camera_init", "body" ) );
 
-    static tf::TransformBroadcaster br_world;
-    transform.setOrigin(tf::Vector3(0, 0, 0));
-    q.setValue(p_imu->Initial_R_wrt_G.x(), p_imu->Initial_R_wrt_G.y(), p_imu->Initial_R_wrt_G.z(), p_imu->Initial_R_wrt_G.w());
-    transform.setRotation(q);
-    br_world.sendTransform(tf::StampedTransform(transform, odomAftMapped.header.stamp, "world", "camera_init"));
+    // static tf::TransformBroadcaster br_world;
+    // transform.setOrigin(tf::Vector3(0, 0, 0));
+    // q.setValue(p_imu->Initial_R_wrt_G.x(), p_imu->Initial_R_wrt_G.y(), p_imu->Initial_R_wrt_G.z(), p_imu->Initial_R_wrt_G.w());
+    // transform.setRotation(q);
+    // br_world.sendTransform(tf::StampedTransform(transform, odomAftMapped.header.stamp, "world", "camera_init"));
 }
 
 void publish_path(const ros::Publisher pubPath)
@@ -802,6 +802,31 @@ void observation_model_share(state_ikfom &s, esekfom::dyn_share_datastruct<doubl
     // std::printf("ef_num: %d\n", effct_feat_num);
 }
 
+// note: add flu and aircraft frame
+void record_flu_odom(ofstream &flu_odom_ofs) {
+  M3D R_flu_odom, R_airbody_imu;
+  R_flu_odom << 0, 1, 0, -1, 0, 0, 0, 0, 1;
+  R_airbody_imu << 0, 0, -1, 1, 0, 0, 0, -1, 0;
+  V3D t_flu_odom(0.0, 0.0, 0.0);
+  V3D t_airbody_imu(0.0, 0.0, 0.0);
+
+  // odom -> imu
+  M3D R_oi = state_point.rot.toRotationMatrix();
+  V3D t_oi(state_point.pos(0), state_point.pos(1), state_point.pos(2));
+  // flu -> imu
+  M3D R_wi = R_flu_odom * R_oi;
+  V3D t_wi = R_flu_odom * t_oi + t_flu_odom;
+  // flu -> body
+  M3D R_wb = R_wi * R_airbody_imu.transpose();
+  V3D t_wb = t_wi - R_wb * t_airbody_imu;
+  Eigen::Quaterniond q_wb(R_wb);
+
+  flu_odom_ofs << std::fixed << std::setprecision(6) << lidar_end_time << " "
+               << t_wb.x() << " " << t_wb.y() << " " << t_wb.z() << " "
+               << q_wb.x() << " " << q_wb.y() << " " << q_wb.z() << " "
+               << q_wb.w() << std::endl;
+}
+
 int main(int argc, char** argv)
 {
     ros::init(argc, argv, "laserMapping");
@@ -882,6 +907,9 @@ int main(int argc, char** argv)
     double epsi[23] = {0.001};
     fill(epsi, epsi+23, 0.001);
     kf.init_dyn_share(get_f, df_dx, df_dw, observation_model_share, NUM_MAX_ITERATIONS, epsi);
+
+    ofstream fout_evo;
+    fout_evo.open(DEBUG_FILE_DIR("evo_tum.txt"), ios::out);
 
     /*** ROS subscribe initialization ***/
     ros::Subscriber sub_pcl = p_pre->lidar_type == AVIA ? \
@@ -1068,6 +1096,8 @@ int main(int argc, char** argv)
             // 可视化相关的shit
             /******* Publish odometry *******/
             publish_odometry(pubOdomAftMapped);
+            /******* Record FLU odometry *******/
+            record_flu_odom(fout_evo);
 //
 //            /*** add the feature points to map kdtree ***/
 //            map_incremental();

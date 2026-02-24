@@ -193,16 +193,30 @@ void ImuProcess::IMU_init(const MeasureGroup &meas, esekfom::esekf<state_ikfom, 
     N ++;
   }
   state_ikfom init_state = kf_state.get_x();
-  init_state.grav = S2(- mean_acc / mean_acc.norm() * G_m_s2);
-  
-  //state_inout.rot = Eye3d; // Exp(mean_acc.cross(V3D(0, 0, -1 / scale_gravity)));
-  init_state.bg  = mean_gyr;
+
+  // note: align imu gravity to negative z axis
+  bool gravity_align = true;
+  if (gravity_align) {
+    init_state.rot = SO3(Eigen::Quaterniond::FromTwoVectors(
+        -mean_acc / mean_acc.norm(), V3D(0.0, 0.0, -1.0)));
+    init_state.grav = S2(V3D(0, 0, -G_m_s2));
+  } else {
+    init_state.grav = S2(-mean_acc / mean_acc.norm() * G_m_s2);
+  }
+
+  // state_inout.rot = Eye3d; // Exp(mean_acc.cross(V3D(0, 0, -1 / scale_gravity)));
+  init_state.bg = mean_gyr;
   init_state.offset_T_L_I = Lidar_T_wrt_IMU;
   init_state.offset_R_L_I = Lidar_R_wrt_IMU;
   kf_state.change_x(init_state);
 
-  // initial world pose
-  Initial_R_wrt_G = SO3(g2R(mean_acc));
+  std::cout << "init state" << std::endl
+            << "pos: " << init_state.pos << std::endl
+            << "rot:" << init_state.rot.toRotationMatrix() << std::endl
+            << "vel: " << init_state.vel << std::endl
+            << "ba: " << init_state.ba << std::endl
+            << "bg: " << init_state.bg << std::endl
+            << "grav: " << init_state.grav << std::endl;
 
   esekfom::esekf<state_ikfom, 12, input_ikfom>::cov init_P = kf_state.get_P();
   init_P.setIdentity();

@@ -1,23 +1,17 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(pv_lio)
 
-#SET(CMAKE_BUILD_TYPE "Debug")
-#set(CMAKE_CXX_FLAGS "-std=c++11")
 set(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -g -pthread")
-#set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -g -pthread")
 
-ADD_COMPILE_OPTIONS(-std=c++14 )
-ADD_COMPILE_OPTIONS(-std=c++14 )
-set( CMAKE_CXX_FLAGS "-std=c++14 -O3" )
-
-add_definitions(-DROOT_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}/\")
-
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fexceptions" )
-set(CMAKE_CXX_STANDARD 14)
+# 统一使用 CMake 原生方式设置 C++17
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -pthread -std=c++0x -std=c++14 -fexceptions")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fexceptions")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -fexceptions")
+
+add_definitions(-DROOT_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}/\")
 
 message("Current CPU archtecture: ${CMAKE_SYSTEM_PROCESSOR}")
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "(x86)|(X86)|(amd64)|(AMD64)" )
@@ -102,10 +96,10 @@ add_executable(pv_lio_node src/voxelMapping.cpp src/preprocess.cpp)
 target_link_libraries(pv_lio_node ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${PYTHON_LIBRARIES})
 target_include_directories(pv_lio_node PRIVATE ${PYTHON_INCLUDE_DIRS})
 
-add_executable(pandar_to_velodyne src/converter/pandar_to_velodyne.cpp)
-target_link_libraries(pandar_to_velodyne ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${PYTHON_LIBRARIES})
-target_include_directories(pandar_to_velodyne PRIVATE ${PYTHON_INCLUDE_DIRS})
+# add_executable(pandar_to_velodyne src/converter/pandar_to_velodyne.cpp)
+# target_link_libraries(pandar_to_velodyne ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${PYTHON_LIBRARIES})
+# target_include_directories(pandar_to_velodyne PRIVATE ${PYTHON_INCLUDE_DIRS})
 
-add_executable(rs_to_velodyne src/converter/rs_to_velodyne.cpp)
-target_link_libraries(rs_to_velodyne ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${PYTHON_LIBRARIES})
-target_include_directories(rs_to_velodyne PRIVATE ${PYTHON_INCLUDE_DIRS})
+# add_executable(rs_to_velodyne src/converter/rs_to_velodyne.cpp)
+# target_link_libraries(rs_to_velodyne ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${PYTHON_LIBRARIES})
+# target_include_directories(rs_to_velodyne PRIVATE ${PYTHON_INCLUDE_DIRS})
