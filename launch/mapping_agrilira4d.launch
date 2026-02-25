@@ -1,7 +1,7 @@
 <launch>
     <!-- Launch file for velodyne16 VLP-16 LiDAR -->
 
-    <arg name="rviz" default="true"/>
+    <arg name="rviz" default="false"/>
     <arg name="debug" default="false"/>
 
     <!-- <rosparam command="load" file="$(find pv_lio)/config/robosense.yaml"/> -->

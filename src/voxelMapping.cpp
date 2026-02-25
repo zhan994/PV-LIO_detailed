@@ -428,20 +428,10 @@ void publish_frame_world(const ros::Publisher & pubLaserCloudFull)
             if(p->intensity < 5){
                 continue;
             }
-//            if (p->x < 0 and p->x > -4
-//                    and p->y < 1.5 and p->y > -1.5
-//                            and p->z < 2 and p->z > -1) {
-//                continue;
-//            }
-            PointType p_world;
 
+            PointType p_world;
             RGBpointBodyToWorld(p, &p_world);
-//            if (p_world.z > 1) {
-//                continue;
-//            }
             laserCloudWorld.push_back(p_world);
-//            RGBpointBodyToWorld(&laserCloudFullRes->points[i], \
-//                                &laserCloudWorld->points[i]);
         }
 
         sensor_msgs::PointCloud2 laserCloudmsg;
@@ -456,7 +446,6 @@ void publish_frame_world(const ros::Publisher & pubLaserCloudFull)
 
 void publish_frame_body(const ros::Publisher & pubLaserCloudFull_body)
 {
-//    int size = feats_undistort->points.size();
     PointCloudXYZI::Ptr laserCloudFullRes(dense_pub_en ? feats_undistort : feats_down_body);
     int size = laserCloudFullRes->points.size();
     PointCloudXYZI::Ptr laserCloudIMUBody(new PointCloudXYZI(size, 1));
@@ -500,7 +489,7 @@ void publish_odometry(const ros::Publisher & pubOdomAftMapped)
 {
     odomAftMapped.header.frame_id = "camera_init";
     odomAftMapped.child_frame_id = "body";
-    odomAftMapped.header.stamp = ros::Time().fromSec(lidar_end_time);// ros::Time().fromSec(lidar_end_time);
+    odomAftMapped.header.stamp = ros::Time().fromSec(lidar_end_time);
     set_posestamp(odomAftMapped.pose);
     pubOdomAftMapped.publish(odomAftMapped);
     auto P = kf.get_P();
@@ -632,8 +621,6 @@ M3D transformLiDARCovToWorld(Eigen::Vector3d &p_lidar, const esekfom::esekf<stat
 
 void observation_model_share(state_ikfom &s, esekfom::dyn_share_datastruct<double> &ekfom_data)
 {
-//    laserCloudOri->clear();
-//    corr_normvect->clear();
     feats_with_correspondence->clear();
     total_residual = 0.0;
 
@@ -909,7 +896,7 @@ int main(int argc, char** argv)
     kf.init_dyn_share(get_f, df_dx, df_dw, observation_model_share, NUM_MAX_ITERATIONS, epsi);
 
     ofstream fout_evo;
-    fout_evo.open(DEBUG_FILE_DIR("evo_tum.txt"), ios::out);
+    fout_evo.open("/home/zhan/PVLIO.txt", ios::out);
 
     /*** ROS subscribe initialization ***/
     ros::Subscriber sub_pcl = p_pre->lidar_type == AVIA ? \
